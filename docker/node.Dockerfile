@@ -7,4 +7,4 @@ COPY ./libsodium-tests /wasmmark/libsodium-tests
 COPY ./scripts /wasmmark
 
 ENV REPEAT=1
-CMD ["zx", "--quiet", "./runner.mjs", "./node.mjs"]
+CMD ["zx", "--quiet", "./run.mjs", "./runners/node.mjs"]
