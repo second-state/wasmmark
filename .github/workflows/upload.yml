@@ -1,0 +1,32 @@
+name: Upload
+
+on:
+  workflow_call:
+    inputs:
+      name:
+        type: string
+        required: true
+      version:
+        type: string
+        required: true
+      artifact:
+        type: string
+        required: true
+
+jobs:
+  push-result:
+    name: Push Result of ${{ inputs.name }} (${{ inputs.version }})
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: logs
+      - uses: actions/download-artifact@v3
+        with:
+          name: ${{ inputs.artifact }}
+          path: ./result
+      - uses: EndBug/add-and-commit@v9
+        with:
+          add: ./result
+          default_author: github_actions
+          message: Result of ${{ inputs.name }}@${{ inputs.version }}

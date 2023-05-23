@@ -1,0 +1,97 @@
+name: Build and Run
+
+on:
+  workflow_call:
+    inputs:
+      name:
+        type: string
+        required: true
+      version:
+        type: string
+        required: true
+      dockerfile:
+        type: string
+        required: true
+      build-args:
+        type: string
+        required: false
+      run-repeat:
+        type: number
+        default: 1
+      artifacts-days:
+        type: number
+        default: 1
+    outputs:
+      artifact:
+        value: ${{ jobs.run-docker-image.outputs.artifact }}
+      filename:
+        value: ${{ jobs.run-docker-image.outputs.filename }}
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      imgname: ${{ steps.prep.outputs.imgname }}
+    steps:
+      - id: prep
+        run: |
+          IMGNAME=wasmmark/${{ inputs.name }}:${{ inputs.version }}
+          echo "imgname=${IMGNAME,,}" >> $GITHUB_OUTPUT
+
+  build-docker-image:
+    needs: [ prepare ]
+    name: Build Docker Image of ${{ inputs.name }} (${{ inputs.version }})
+    runs-on: ubuntu-latest
+    outputs:
+      artifact: ${{ steps.vars.outputs.artifact }}
+      filepath: ${{ steps.vars.outputs.filepath }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: docker/setup-buildx-action@v2
+      - id: vars
+        run: |
+          FILENAME=wasmmark-${{ inputs.name }}-${{ inputs.version }}
+          echo "artifact=${FILENAME}" >> $GITHUB_OUTPUT
+          echo "filepath=/tmp/${FILENAME}.tar" >> $GITHUB_OUTPUT
+      - uses: docker/build-push-action@v4
+        with:
+          build-args: ${{ inputs.build-args }} # TODO: handle empty case
+          context: .
+          file: ${{ inputs.dockerfile }}
+          tags: ${{ needs.prepare.outputs.imgname }}
+          outputs: type=docker,dest=${{ steps.vars.outputs.filepath }}
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ${{ steps.vars.outputs.artifact }}
+          path: ${{ steps.vars.outputs.filepath }}
+          retention-days: ${{ inputs.artifacts-days }}
+
+  run-docker-image:
+    needs: [ prepare, build-docker-image ]
+    name: Run Docker Image of ${{ inputs.name }} (${{ inputs.version }})
+    runs-on: ubuntu-latest
+    outputs:
+      artifact: ${{ steps.vars.outputs.artifact }}
+      filename: ${{ steps.vars.outputs.filename }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: docker/setup-buildx-action@v2
+      - uses: actions/download-artifact@v3
+        with:
+          name: ${{ needs.build-docker-image.outputs.artifact }}
+          path: /tmp
+      - id: vars
+        run: |
+          NAME=${{ inputs.name }}-$(date -u '+%y%m%d%H%M')-${{ inputs.version }}
+          echo "artifact=wasmmark-${NAME}" >> $GITHUB_OUTPUT
+          echo "filename=${NAME}.json" >> $GITHUB_OUTPUT
+          echo "filepath=/tmp/${NAME}.json" >> $GITHUB_OUTPUT
+      - name: Load and Run Image
+        run: |
+          docker load --input /tmp/${{ needs.build-docker-image.outputs.artifact }}.tar
+          docker run --rm ${{ needs.prepare.outputs.imgname }} | tee ${{ steps.vars.outputs.filepath }}
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ${{ steps.vars.outputs.artifact }}
+          path: ${{ steps.vars.outputs.filepath }}
+          retention-days: ${{ inputs.artifacts-days }}

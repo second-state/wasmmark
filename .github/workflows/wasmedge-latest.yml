@@ -1,0 +1,53 @@
+name: "WasmEdge Latest"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+on:
+  schedule:
+    - cron: "7 21 * * *"
+  push:
+    tags: [ "v[0-9]+.[0-9]+.[0-9]+*" ]
+    branches:
+      - "dev/workflow*"
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.prep.outputs.version }}
+    steps:
+      - id: prep
+        run: |
+          echo "version=$(git ls-remote https://github.com/WasmEdge/WasmEdge.git master | cut -f 1)" >> $GITHUB_OUTPUT
+
+  wasmedge-latest:
+    needs: [ prepare ]
+    uses: ./.github/workflows/build-and-run.yml
+    with:
+      name: WasmEdge
+      version: ${{ needs.prepare.outputs.version }}
+      dockerfile: ./docker/wasmedge-src.Dockerfile
+      build-args: commitish=master
+
+  uplaod:
+    needs: [ prepare, wasmedge-latest ]
+    uses: ./.github/workflows/upload.yml
+    with:
+      name: WasmEdge
+      version: ${{ needs.prepare.outputs.version }}
+      artifact: ${{ needs.wasmedge-latest.outputs.artifact }}
+
+  summarize:
+    needs: [ wasmedge-latest ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+        with:
+          name: ${{ needs.wasmedge-latest.outputs.artifact }}
+          path: ./result
+      - run: |
+          echo 'TODO: print a summary'
+          jq '."libsodium-tests".repeat' < ./result/${{ needs.wasmedge-latest.outputs.filename }}
