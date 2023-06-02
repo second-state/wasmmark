@@ -7,9 +7,9 @@ Run WebAssembly benchmarks and report differences between versions.
 ## Build Dockerfiles
 
 ```sh
-docker build -t "wasmmark:node" -f docker/node.Dockerfile .
-docker build --build-arg version=0.11.2 -t "wasmmark:wasmedge-0.11.2" -f docker/wasmedge.Dockerfile .
-docker build --build-arg commitish=master -t "wasmmark:wasmedge-latest" -f docker/wasmedge-src.Dockerfile .
+docker build -t "wasmmark/node:lts" -f docker/node.Dockerfile .
+docker build --build-arg version=0.11.2 -t "wasmmark/wasmedge:0.11.2" -f docker/wasmedge.Dockerfile .
+docker build --build-arg commitish=master -t "wasmmark/wasmedge:latest" -f docker/wasmedge-src.Dockerfile .
 ```
 
 ## Future Work
