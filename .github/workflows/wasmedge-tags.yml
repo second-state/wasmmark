@@ -1,0 +1,63 @@
+name: "WasmEdge Tags"
+
+concurrency:
+  group: WasmEdge-Tags-${{ github.head_ref || github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        type: string
+        required: true
+      repeat:
+        type: number
+        default: 7
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        required: true
+      repeat:
+        type: number
+        default: 7
+
+jobs:
+  precheck:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo 'TODO: check if version is valid'
+          echo 'TODO: check the event that triggered this workflow,'
+          echo 'TODO: and assign names for different events'
+
+  wasmedge-release:
+    needs: [ precheck ]
+    uses: ./.github/workflows/build-and-run.yml
+    with:
+      name: WasmEdge
+      version: ${{ inputs.version }}
+      dockerfile: ./docker/wasmedge.Dockerfile
+      build-args: version=${{ inputs.version }}
+      run-repeat: ${{ inputs.repeat }}
+
+  upload:
+    needs: [ wasmedge-release ]
+    uses: ./.github/workflows/upload.yml
+    with:
+      name: WasmEdge
+      version: ${{ inputs.version }}
+      artifact: ${{ needs.wasmedge-release.outputs.artifact }}
+
+  summarize:
+    needs: [ wasmedge-release ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+        with:
+          name: ${{ needs.wasmedge-release.outputs.artifact }}
+          path: ./result
+      - run: |
+          echo 'TODO: print a summary'
+          jq '."libsodium-tests".repeat' < ./result/${{ needs.wasmedge-release.outputs.filename }}
