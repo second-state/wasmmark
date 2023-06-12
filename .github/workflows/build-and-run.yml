@@ -90,6 +90,8 @@ jobs:
         run: |
           docker load --input /tmp/${{ needs.build-docker-image.outputs.artifact }}.tar
           docker run --rm ${{ needs.prepare.outputs.imgname }} | tee ${{ steps.vars.outputs.filepath }}
+        env:
+          REPEAT: ${{ inputs.run-repeat }}
       - uses: actions/upload-artifact@v3
         with:
           name: ${{ steps.vars.outputs.artifact }}
