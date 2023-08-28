@@ -8,11 +8,15 @@
 | [out-of-bound.wat] | start w/ 1 memory page; store an `i32` at addr `65533` | fails w/ `out of bounds memory access` |
 | [wellgrown.wat] | limit at 2 memory pages; start w/ 1 page and grow by 1 page | returns `1` |
 | [overgrown.wat] | limit at 2 memory pages; start w/ 1 page and grow by 2 pages | returns `4294967295` (`-1` in `u32`) |
+| [valid-size.wat] | grow memory by 65536 pages | returns `0` |
+| [invalid-size.wat] | grow memory by 65537 pages | returns `4294967295` (`-1` in `u32`) |
 
 [just-in-bound.wat]: memory/just-in-bound.wat
 [out-of-bound.wat]: memory/out-of-bound.wat
 [wellgrown.wat]: memory/wellgrown.wat
 [overgrown.wat]: memory/overgrown.wat
+[valid-size.wat]: memory/valid-size.wat
+[invalid-size.wat]: memory/invalid-size.wat
 
 ## Running
 
