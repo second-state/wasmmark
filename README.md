@@ -16,7 +16,7 @@ docker build --build-arg commitish=master -t "wasmmark/wasmedge:latest" -f docke
 
 * Unify environment in all dockerfiles:
 
-    Only [docker/wasmedge-src.Dockerfile](wasmedge-src.Dockerfile) is based on `wasmedge/wasmedge:latest`.
+    Only [docker/wasmedge-src.Dockerfile](docker/wasmedge-src.Dockerfile) is based on `wasmedge/wasmedge:latest`.
 
 * Add error handling:
 
