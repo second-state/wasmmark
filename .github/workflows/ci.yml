@@ -1,0 +1,20 @@
+name: "CI on Pull-Request"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+    branches:
+      - "main"
+
+jobs:
+  build-and-run:
+    uses: ./.github/workflows/build-and-run.yml
+    with:
+      name: WasmEdge
+      version: 0.14.1
+      dockerfile: ./docker/wasmedge.Dockerfile
+      build-args: version=0.14.1
+      run-repeat: 1
