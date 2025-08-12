@@ -46,7 +46,7 @@ jobs:
       artifact: ${{ steps.vars.outputs.artifact }}
       filepath: ${{ steps.vars.outputs.filepath }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: docker/setup-buildx-action@v3
       - id: vars
         run: |
@@ -74,9 +74,9 @@ jobs:
       artifact: ${{ steps.vars.outputs.artifact }}
       filename: ${{ steps.vars.outputs.filename }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: docker/setup-buildx-action@v3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: ${{ needs.build-docker-image.outputs.artifact }}
           path: /tmp
