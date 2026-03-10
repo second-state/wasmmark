@@ -47,13 +47,13 @@ jobs:
       filepath: ${{ steps.vars.outputs.filepath }}
     steps:
       - uses: actions/checkout@v6
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v4
       - id: vars
         run: |
           FILENAME=wasmmark-${{ inputs.name }}-${{ inputs.version }}
           echo "artifact=${FILENAME}" >> $GITHUB_OUTPUT
           echo "filepath=/tmp/${FILENAME}.tar" >> $GITHUB_OUTPUT
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         with:
           build-args: ${{ inputs.build-args }} # TODO: handle empty case
           context: .
@@ -75,7 +75,7 @@ jobs:
       filename: ${{ steps.vars.outputs.filename }}
     steps:
       - uses: actions/checkout@v6
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v4
       - uses: actions/download-artifact@v8
         with:
           name: ${{ needs.build-docker-image.outputs.artifact }}
