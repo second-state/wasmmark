@@ -25,7 +25,7 @@ jobs:
         with:
           name: ${{ inputs.artifact }}
           path: ./result
-      - uses: EndBug/add-and-commit@v9
+      - uses: EndBug/add-and-commit@v10
         with:
           add: ./result
           default_author: github_actions
